@@ -151,12 +151,13 @@ fn _start() -> ! {
         let gpio = &mut *(0x4004_4000 as *mut GPIOPorts);
 
         let cols = [
-            (&gpio.a, PinSet::from_indexes([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15])),
+            (
+                &gpio.a,
+                PinSet::from_indexes([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]),
+            ),
             (&gpio.d, PinSet::from_indexes([0, 1, 2, 3, 8])),
         ];
-        let rows = [
-            (&gpio.c, PinSet::from_indexes([3,4,5,6,7,8])),
-        ];
+        let rows = [(&gpio.c, PinSet::from_indexes([3, 4, 5, 6, 7, 8]))];
 
         sys_ctrl0.disable_swd();
         let win_mac_keys_led_pins = PinSet::from_indexes([4, 5]);
@@ -177,7 +178,10 @@ fn _start() -> ! {
 
         loop {
             let mut num_keys_pressed = 0;
-            for (col_port, col_pin) in cols.into_iter().flat_map(|(port, pins)| pins.pins().map(move |pin| (port, pin))) {
+            for (col_port, col_pin) in cols
+                .into_iter()
+                .flat_map(|(port, pins)| pins.pins().map(move |pin| (port, pin)))
+            {
                 col_port.clear_pins(PinSet::one_pin(col_pin));
                 delay();
                 for (row_port, row_pins) in rows {
@@ -188,8 +192,12 @@ fn _start() -> ! {
                 delay();
             }
 
-            for (idx, (led_port, led_pin)) in [(&gpio.b, 4), (&gpio.b, 5), (&gpio.d, 6), (&gpio.d, 7)].into_iter().enumerate() {
-                if num_keys_pressed & (1<<idx) == 0 {
+            for (idx, (led_port, led_pin)) in
+                [(&gpio.b, 4), (&gpio.b, 5), (&gpio.d, 6), (&gpio.d, 7)]
+                    .into_iter()
+                    .enumerate()
+            {
+                if num_keys_pressed & (1 << idx) == 0 {
                     led_port.clear_pins(PinSet::one_pin(led_pin));
                 } else {
                     led_port.set_pins(PinSet::one_pin(led_pin));
